@@ -128,7 +128,12 @@ async function getWeather(city) {
     url: 'https://restapi.amap.com/v3/weather/weatherInfo',
     method: 'GET',
     params: {
+<<<<<<< HEAD
       key,
+=======
+      //这里填入高德地图api获取的key
+      key: '',
+>>>>>>> bc9ec363f41a64184805c7316a1e35f9b252e6f9
       city,
       extensions: 'base'
     }
