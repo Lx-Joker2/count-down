@@ -1,16 +1,16 @@
-let snowInterval
-let snowMoveInterval
+let addSnowAnimation
+let snowAnimation
 let snowNums = 0
+const weatherSnow = []
 
 function startSnow(level, wLevel) {
   snowNums = Math.pow(level, 2) * 100
-  if (snowMoveInterval)
+  if (addSnowAnimation)
     return
   console.log('开始下雪')
-  const weatherSnow = []
   weatherSnowCvs.style.filter = 'blur(1px)'
   weatherSnowCtx.fillStyle = 'white'
-  snowInterval = setInterval(() => {
+  function addSnow() {
     while (weatherSnow.length < snowNums) {
       let snowX = Math.random() * window.innerWidth + 1
       const snowWSize = Math.random() * 3
@@ -19,9 +19,12 @@ function startSnow(level, wLevel) {
       const snowDirect = Math.floor(Math.random() * 3)
       weatherSnow.push({ X: snowX, Y: snowY, size: snowWSize, speed: snowSpeed, direct: snowDirect })
     }
-  }, 1000)
+    if (addSnowAnimation)
+      cancelAnimationFrame(addSnowAnimation)
+    addSnowAnimation = requestAnimationFrame(addSnow)
+  }
   windLevel = wLevel
-  snowMoveInterval = setInterval(() => {
+  function snowMove() {
     weatherSnowCtx.clearRect(0, 0, weatherSnowCvs.width, weatherSnowCvs.height)
     for (let i = 0; i < weatherSnow.length; i++) {
       weatherSnow[i].Y += (weatherSnow[i].speed + windLevel * 0.1)
@@ -39,16 +42,26 @@ function startSnow(level, wLevel) {
         weatherSnow.splice(i, 1)
       }
       if (weatherSnow.length === 0) {
-        clearInterval(snowMoveInterval)
-        snowMoveInterval = null
+        cancelAnimationFrame(snowAnimation)
+        snowAnimation = null
       }
     }
-  }, 5)
+    if (snowAnimation)
+      cancelAnimationFrame(snowAnimation)
+    snowAnimation = requestAnimationFrame(snowMove)
+  }
+  addSnow()
+  snowMove()
 }
 
 function stopSnow() {
   console.log('停止下雪')
-  if (snowInterval)
-    clearInterval(snowInterval)
-
+  if (snowAnimation && weatherSnow.length === 0) {
+    cancelAnimationFrame(snowAnimation)
+    snowAnimation = null
+  }
+  if (addSnowAnimation) {
+    cancelAnimationFrame(addSnowAnimation)
+    addSnowAnimation = null
+  }
 }

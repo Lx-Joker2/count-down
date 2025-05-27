@@ -1,17 +1,17 @@
-let weatherInterval
-let weatherMoveInterval
+let addRainAnimation
+let rainAnimation
 let rainNums = 0
+const weatherDrop = []
 
 function startRain(level) {
   rainNums = Math.pow(level, 2) * 100
-  if (weatherMoveInterval)
+  if (addRainAnimation)
     return
   console.log('开始下雨')
-  const weatherDrop = []
   weatherDropCvs.style.filter = 'none'
   weatherDropCtx.strokeStyle = 'rgba(255,255,255,0.8)'
   weatherDropCtx.lineWidth = 2
-  weatherInterval = setInterval(() => {
+  function addRain() {
     while (weatherDrop.length < rainNums) {
       const long = Math.random() * 10 + 10
       const X = Math.random() * window.innerWidth + 1
@@ -22,8 +22,11 @@ function startRain(level) {
       }
       weatherDrop.push(rain)
     }
-  }, 1)
-  weatherMoveInterval = setInterval(() => {
+    if (addRainAnimation)
+      cancelAnimationFrame(addRainAnimation)
+    addRainAnimation = requestAnimationFrame(addRain)
+  }
+  function rainMove() {
     weatherDropCtx.clearRect(0, 0, weatherDropCvs.width, weatherDropCvs.height)
     for (let i = 0; i < weatherDrop.length; i++) {
       weatherDrop[i].Y += 5
@@ -36,15 +39,26 @@ function startRain(level) {
         weatherDrop.splice(i, 1)
       }
       if (weatherDrop.length === 0) {
-        clearInterval(weatherMoveInterval)
-        weatherMoveInterval = null
+        cancelAnimationFrame(addRainAnimation)
+        addRainAnimation = null
       }
     }
-  }, 0)
+    if (rainAnimation)
+      cancelAnimationFrame(rainAnimation)
+    rainAnimation = requestAnimationFrame(rainMove)
+  }
+  addRain()
+  rainMove()
 }
 
 function stopRain() {
   console.log('停止下雨')
-  if (weatherInterval)
-    clearInterval(weatherInterval)
+  if (rainAnimation && weatherDrop.length === 0) {
+    cancelAnimationFrame(rainAnimation)
+    rainAnimation = null
+  }
+  if (addRainAnimation) {
+    cancelAnimationFrame(addRainAnimation)
+    addRainAnimation = null
+  }
 }

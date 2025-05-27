@@ -8,7 +8,10 @@ let weather
 let nowLevel
 let level
 
-let code = '431003'
+let isInit = false
+let code = localStorage.getItem('cityCode') || '110101'
+// 高德地图api
+const key = ''
 // 正式方法：调用api获取天气并更新
 window.addEventListener('load', () => {
   getWeather(code)
@@ -19,7 +22,7 @@ window.addEventListener('load', () => {
 
 
 // 测试用：测试时打开此方法
-// weather = '晴'
+// weather = '阴'
 // level = 1
 // setInterval(() => {
 //   updateWeather()
@@ -50,15 +53,6 @@ async function initCity() {
       cityList.style.display = 'inline-block'
     addList(cityArr, cityList, '城市')
     initList(cityArr, cityList, code, 2, 4)
-    // if (code) {
-    //   cityCode = code.substring(2, 4)
-    //   for (let i = 0; i < cityArr.length; i++) {
-    //     if (cityArr[i].code.toString().slice(2, 4) === cityCode) {
-    //       cityList.value = cityArr[i].code
-    //       cityList.dispatchEvent(new Event('change'))
-    //     }
-    //   }
-    // }
   })
   cityList.addEventListener('change', async function (e) {
     const index = this.selectedIndex
@@ -77,24 +71,16 @@ async function initCity() {
       areasList.style.display = 'inline-block'
     addList(areaArr, areasList, '地区')
     initList(areaArr, areasList, code, 4, 6)
-    // if (code) {
-    // areaCode = code.substring(4, 6)
-    // for (let i = 0; i < areaArr.length; i++) {
-    //   if (areaArr[i].code.toString().slice(4, 6) === areaCode) {
-    //     areasList.value = areaArr[i].code
-    //     areasList.dispatchEvent(new Event('change'))
-    //   }
-    // }
-    // }
   })
-  areasList.addEventListener('change', function (e) {
-    if (code) {
-      code = this.value.substring(0, 6)
+  areasList.addEventListener('change', function () {
+    if (code)
       code = null
-    }
-    cCode = this.value.substring(0, 6)
-    console.log(cCode)
+    const cCode = this.value.substring(0, 6)
+    code = cCode
     getWeather(cCode)
+    console.log('cCode', cCode)
+    localStorage.setItem('cityCode', cCode)
+    isInit = true
   })
   let provinceArr = await getResult({
     method: 'GET',
@@ -108,7 +94,7 @@ async function initCity() {
 }
 
 function initList(arr, list, code, startIndex, endIndex) {
-  if (code) {
+  if (code && (!isInit)) {
     const cCode = code.substring(startIndex, endIndex)
     for (let i = 0; i < arr.length; i++) {
       if (arr[i].code.toString().slice(startIndex, endIndex) === cCode) {
@@ -142,17 +128,17 @@ async function getWeather(city) {
     url: 'https://restapi.amap.com/v3/weather/weatherInfo',
     method: 'GET',
     params: {
-      key: 'd87648cb8bdd40be6bd601cff0a14115',
+      key,
       city,
       extensions: 'base'
     }
   }).then(result => {
+    console.log(result)
     weather = result.data.lives[0].weather
     level = +result.data.lives[0].windpower.slice(result.data.lives[0].windpower.length - 1)
     updateWeather()
-    console.log(result)
   }).catch(error => {
-    console.log(`错误，原因：${error}`)
+    console.log(`天气api错误，原因：${error}`)
   })
 }
 
